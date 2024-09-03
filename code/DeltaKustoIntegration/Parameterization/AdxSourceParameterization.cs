@@ -9,6 +9,8 @@ namespace DeltaKustoIntegration.Parameterization
 
         public string? Database { get; set; } = null;
 
+        public bool AllowInsecureHttp { get; set; } = false;
+
         internal void Validate()
         {
             Uri? uri;
@@ -21,9 +23,13 @@ namespace DeltaKustoIntegration.Parameterization
             {
                 throw new DeltaException($"'clusterUri' is an invalid Uri:  '{ClusterUri}'");
             }
-            if (uri.Scheme != "https")
+            if (!(uri.Scheme == "https" || (uri.Scheme == "http" && AllowInsecureHttp)))
             {
-                throw new DeltaException($"'clusterUri' should be https but isn't:  '{ClusterUri}'");
+                if (uri.Scheme == "http")
+                {
+                    throw new DeltaException($"When clusterUri is http, 'allowInsecureHttp' must be set to true:  '{ClusterUri}'");
+                }
+                throw new DeltaException($"'clusterUri' should be https:  '{ClusterUri}'");
             }
             if (uri.LocalPath != "/")
             {
